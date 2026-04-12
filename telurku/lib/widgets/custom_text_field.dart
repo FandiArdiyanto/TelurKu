@@ -10,6 +10,7 @@ class CustomTextField extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.isNumber,
+    required TextEditingController controller,
   });
 
   @override

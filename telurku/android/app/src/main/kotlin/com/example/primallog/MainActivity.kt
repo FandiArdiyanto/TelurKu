@@ -1,4 +1,4 @@
-package com.example.telurku
+package com.example.primallog
 
 import io.flutter.embedding.android.FlutterActivity
 
