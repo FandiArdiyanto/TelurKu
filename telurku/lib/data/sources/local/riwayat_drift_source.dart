@@ -60,6 +60,10 @@ class RiwayatDriftSource implements RiwayatRepository {
     )..where((t) => t.id.equals(int.parse(id)))).go();
   }
   @override
+  Future<void> hapusSemua() async {
+    await _db.delete(_db.aktivitasTable).go();
+  }
+  @override
   Future<void> edit(RiwayatItem item) async {
     await (_db.update(_db.aktivitasTable)
       ..where((t) => t.id.equals(int.parse(item.id))))

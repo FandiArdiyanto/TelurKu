@@ -18,6 +18,10 @@ class RiwayatNotifier extends AsyncNotifier<List<RiwayatItem>> {
   Future<List<RiwayatItem>> build() async {
     return ref.read(driftSourceProvider).getAll();
   }
+  Future<void> hapusSemua() async {
+    await ref.read(driftSourceProvider).hapusSemua();
+    state = const AsyncData([]); // Kosongkan state
+  }
 
   Future<void> tambah(RiwayatItem item) async {
     // 1. Ambil data stok saat ini

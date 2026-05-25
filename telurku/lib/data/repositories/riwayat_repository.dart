@@ -5,4 +5,5 @@ abstract class RiwayatRepository {
   Future<void> tambah(RiwayatItem item);
   Future<void> hapus(String id);
   Future<void> edit(RiwayatItem item);
+  Future<void> hapusSemua();
 }

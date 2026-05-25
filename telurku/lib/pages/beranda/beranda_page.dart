@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/riwayat_item.dart';
 import '../../providers/riwayat_provider.dart';
+import '../../providers/profil_provider.dart'; // Import profil provider baru
 import '../../utils/app_colors.dart';
 import '../../widgets/action_card.dart';
 import '../../widgets/form_input_sheet.dart';
@@ -11,13 +12,13 @@ class BerandaPage extends ConsumerWidget {
   const BerandaPage({super.key});
 
   void _showFormInput(
-    BuildContext context,
-    String judul,
-    IconData ikon,
-    Color warna,
-    TipeAktivitas tipe, {
-    bool isJual = false,
-  }) {
+      BuildContext context,
+      String judul,
+      IconData ikon,
+      Color warna,
+      TipeAktivitas tipe, {
+        bool isJual = false,
+      }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -45,6 +46,11 @@ class BerandaPage extends ConsumerWidget {
     final totalHariIni = ref.watch(totalPanenHariIniProvider);
     final stokSisa = ref.watch(stokSisaProvider);
 
+    // Memantau data profil secara real-time dari shared_preferences
+    final profilAsync = ref.watch(profilProvider);
+    final namaPemilik = profilAsync.valueOrNull?.namaPemilik ?? 'Juragan';
+    final namaPeternakan = profilAsync.valueOrNull?.namaPeternakan ?? 'Peternakan Makmur';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -61,23 +67,24 @@ class BerandaPage extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // --- HEADER DENGAN PROFIL DINAMIS ---
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Halo, Juragan! 👨‍🌾',
-                        style: TextStyle(
+                        'Halo, $namaPemilik! 👨‍🌾',
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.grey,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
-                        'Peternakan Makmur',
-                        style: TextStyle(
+                        namaPeternakan,
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w900,
                           color: AppColors.textDark,
