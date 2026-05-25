@@ -20,20 +20,57 @@ class RiwayatNotifier extends AsyncNotifier<List<RiwayatItem>> {
   }
 
   Future<void> tambah(RiwayatItem item) async {
+    // 1. Ambil data stok saat ini
+    final currentList = state.valueOrNull ?? [];
+
+    // 2. Hitung sisa stok
+    int stokSisa = 0;
+    for (final i in currentList) {
+      if (i.tipe == TipeAktivitas.panen) stokSisa += i.jumlah;
+      if (i.tipe == TipeAktivitas.jual || i.tipe == TipeAktivitas.pecah) stokSisa -= i.jumlah;
+    }
+
+    // 3. Validasi stok untuk penjualan/kerusakan
+    if ((item.tipe == TipeAktivitas.jual || item.tipe == TipeAktivitas.pecah) &&
+        (stokSisa < item.jumlah)) {
+      throw Exception("Stok tidak mencukupi! Sisa stok saat ini: $stokSisa butir");
+    }
+
+    // 4. Simpan ke database
     await ref.read(driftSourceProvider).tambah(item);
     state = AsyncData(await ref.read(driftSourceProvider).getAll());
   }
+  Future<void> edit(RiwayatItem newItem) async {
+    final currentList = state.valueOrNull ?? [];
 
+    // Hitung stok seolah-olah data lama tidak pernah ada
+    int stokTanpaDataLama = 0;
+    for (final i in currentList) {
+      if (i.id == newItem.id) continue; // Lewati data lama yang sedang diedit
+
+      if (i.tipe == TipeAktivitas.panen) stokTanpaDataLama += i.jumlah;
+      if (i.tipe == TipeAktivitas.jual || i.tipe == TipeAktivitas.pecah) stokTanpaDataLama -= i.jumlah;
+    }
+
+    // Validasi stok dengan jumlah yang baru
+    if ((newItem.tipe == TipeAktivitas.jual || newItem.tipe == TipeAktivitas.pecah) &&
+        (stokTanpaDataLama < newItem.jumlah)) {
+      throw Exception("Stok tidak mencukupi untuk diubah! Sisa stok yang tersedia: $stokTanpaDataLama butir");
+    }
+
+    // Jika valid, lakukan update
+    await ref.read(driftSourceProvider).edit(newItem);
+    state = AsyncData(await ref.read(driftSourceProvider).getAll());
+  }
   Future<void> hapus(String id) async {
     await ref.read(driftSourceProvider).hapus(id);
     state = AsyncData(await ref.read(driftSourceProvider).getAll());
   }
 }
 
-final riwayatProvider =
-    AsyncNotifierProvider<RiwayatNotifier, List<RiwayatItem>>(
-      RiwayatNotifier.new,
-    );
+final riwayatProvider = AsyncNotifierProvider<RiwayatNotifier, List<RiwayatItem>>(
+  RiwayatNotifier.new,
+);
 
 final totalPanenHariIniProvider = Provider<int>((ref) {
   final list = ref.watch(riwayatProvider).valueOrNull ?? [];

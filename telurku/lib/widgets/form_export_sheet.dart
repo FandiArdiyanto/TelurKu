@@ -1,31 +1,62 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/riwayat_provider.dart';
+import '../utils/excel_helper.dart';
 
-class FormExportSheet extends StatefulWidget {
+class FormExportSheet extends ConsumerStatefulWidget {
   const FormExportSheet({super.key});
 
   @override
-  State<FormExportSheet> createState() => _FormExportSheetState();
+  ConsumerState<FormExportSheet> createState() => _FormExportSheetState();
 }
 
-class _FormExportSheetState extends State<FormExportSheet> {
-  String _bulan = 'April';
-  String _tahun = '2026';
+class _FormExportSheetState extends ConsumerState<FormExportSheet> {
+  late int _selectedMonth;
+  late int _selectedYear;
+  bool _isLoading = false;
 
   static const _bulanList = [
-    'Januari',
-    'Februari',
-    'Maret',
-    'April',
-    'Mei',
-    'Juni',
-    'Juli',
-    'Agustus',
-    'September',
-    'Oktober',
-    'November',
-    'Desember',
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
   ];
-  static const _tahunList = ['2024', '2025', '2026'];
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _selectedMonth = now.month;
+    _selectedYear = now.year;
+  }
+
+  Future<void> _prosesExport() async {
+    setState(() => _isLoading = true);
+
+    try {
+      // 1. Ambil semua data riwayat dari provider
+      final semuaData = ref.read(riwayatProvider).valueOrNull ?? [];
+
+      // 2. Panggil fungsi export
+      await ExcelHelper.exportAndShare(semuaData, _selectedMonth, _selectedYear);
+
+      if (mounted) {
+        Navigator.pop(context); // Tutup form setelah menu share muncul
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll("Exception: ", "")),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,8 +100,8 @@ class _FormExportSheetState extends State<FormExportSheet> {
             children: [
               Expanded(
                 flex: 2,
-                child: DropdownButtonFormField<String>(
-                  value: _bulan,
+                child: DropdownButtonFormField<int>(
+                  value: _selectedMonth,
                   decoration: InputDecoration(
                     labelText: 'Bulan',
                     filled: true,
@@ -80,16 +111,19 @@ class _FormExportSheetState extends State<FormExportSheet> {
                       borderSide: BorderSide.none,
                     ),
                   ),
-                  items: _bulanList
-                      .map((b) => DropdownMenuItem(value: b, child: Text(b)))
-                      .toList(),
-                  onChanged: (val) => setState(() => _bulan = val!),
+                  items: List.generate(12, (index) {
+                    return DropdownMenuItem(
+                      value: index + 1,
+                      child: Text(_bulanList[index]),
+                    );
+                  }),
+                  onChanged: (val) => setState(() => _selectedMonth = val!),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: _tahun,
+                child: DropdownButtonFormField<int>(
+                  value: _selectedYear,
                   decoration: InputDecoration(
                     labelText: 'Tahun',
                     filled: true,
@@ -99,10 +133,10 @@ class _FormExportSheetState extends State<FormExportSheet> {
                       borderSide: BorderSide.none,
                     ),
                   ),
-                  items: _tahunList
-                      .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                      .toList(),
-                  onChanged: (val) => setState(() => _tahun = val!),
+                  items: [DateTime.now().year - 1, DateTime.now().year].map((t) {
+                    return DropdownMenuItem(value: t, child: Text(t.toString()));
+                  }).toList(),
+                  onChanged: (val) => setState(() => _selectedYear = val!),
                 ),
               ),
             ],
@@ -120,25 +154,20 @@ class _FormExportSheetState extends State<FormExportSheet> {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              icon: const Icon(Icons.download_rounded),
-              label: const Text(
+              icon: _isLoading
+                  ? const SizedBox.shrink()
+                  : const Icon(Icons.download_rounded),
+              label: _isLoading
+                  ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+              )
+                  : const Text(
                 'Unduh File Excel',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    content: Text(
-                      'Proses mengunduh laporan $_bulan $_tahun...',
-                    ),
-                  ),
-                );
-              },
+              onPressed: _isLoading ? null : _prosesExport,
             ),
           ),
           const SizedBox(height: 16),
