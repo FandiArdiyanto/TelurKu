@@ -239,15 +239,19 @@ class _PengaturanPageState extends ConsumerState<PengaturanPage> {
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.egg_rounded, color: AppColors.primary, size: 40),
+                    child: Image.asset(
+                    'assets/images/TelurKu.PNG', // Memanggil file logo yang sudah diganti
+                    height: 60, // Atur tinggi logo agar pas
+                    fit: BoxFit.contain,
+                    ),
                   ),
                   const SizedBox(height: 12),
-                  const Text('PrimalLog / TelurKu', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  const Text('TelurKu', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                   Text('Versi 1.0.0', style: TextStyle(color: AppColors.textDark.withValues(alpha: 0.5))),
 
                   const Padding(

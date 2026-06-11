@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/riwayat_item.dart';
 import '../../providers/riwayat_provider.dart';
-import '../../providers/profil_provider.dart'; // Import profil provider baru
+import '../../providers/profil_provider.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/action_card.dart';
 import '../../widgets/form_input_sheet.dart';
@@ -52,10 +52,28 @@ class BerandaPage extends ConsumerWidget {
     final namaPeternakan = profilAsync.valueOrNull?.namaPeternakan ?? 'Peternakan Makmur';
 
     return Scaffold(
+      backgroundColor: AppColors.background, // Opsional: pastikan background rapi
       appBar: AppBar(
-        title: const Text(
-          'PrimalLog',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        // --- BAGIAN UTAMA YANG DIUBAH (GANTI JUDUL) ---
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center, // Agar Row di tengah
+          mainAxisSize: MainAxisSize.min, // Agar Row hanya memakan ruang secukupnya
+          children: [
+            // Tampilkan Gambar Logo
+            Image.asset(
+              'assets/images/TelurKu.PNG', // Pastikan path sesuai pubspec.yaml
+              height: 36, // Atur tinggi logo agar pas di AppBar
+            ),
+            const SizedBox(width: 0), // Beri jeda antara logo dan teks
+            // Tampilkan Teks Judul Baru
+            const Text(
+              'TelurKu',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFFF7500), // Sesuaikan warna teks
+              ),
+            ),
+          ],
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
@@ -67,7 +85,7 @@ class BerandaPage extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- HEADER DENGAN PROFIL DINAMIS ---
+              // Header dengan profil dinamis
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
