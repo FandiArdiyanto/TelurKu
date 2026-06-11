@@ -59,7 +59,25 @@ class RiwayatDriftSource implements RiwayatRepository {
       _db.aktivitasTable,
     )..where((t) => t.id.equals(int.parse(id)))).go();
   }
+  @override
+  Future<void> hapusSemua() async {
+    await _db.delete(_db.aktivitasTable).go();
+  }
+  @override
+  Future<void> edit(RiwayatItem item) async {
+    await (_db.update(_db.aktivitasTable)
+      ..where((t) => t.id.equals(int.parse(item.id))))
+        .write(
+      AktivitasTableCompanion(
+        tipe: Value(item.tipe.name),
+        jumlah: Value(item.jumlah),
 
+        tanggal: Value(item.tanggal),
+        catatan: Value(item.catatan),
+        hargaPerButir: Value(item.hargaPerButir),
+      ),
+    );
+  }
   // Stream opsional — untuk reaktif real-time kalau dibutuhkan nanti
   Stream<List<RiwayatItem>> watchAll() {
     return (_db.select(_db.aktivitasTable)
